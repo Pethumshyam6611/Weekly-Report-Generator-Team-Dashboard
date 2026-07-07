@@ -1,0 +1,185 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { AssignMemberModal } from '@/components/projects/AssignMemberModal';
+import { ProjectFormModal } from '@/components/projects/ProjectFormModal';
+import { ProjectTable } from '@/components/projects/ProjectTable';
+import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Spinner } from '@/components/ui/Spinner';
+import { getApiErrorMessage } from '@/lib/api/axiosClient';
+import {
+  assignUserToProject,
+  createProject,
+  deactivateProject,
+  getProjectMembers,
+  getProjects,
+  updateProject
+} from '@/lib/api/projects.api';
+import { getReports } from '@/lib/api/reports.api';
+import type { ProjectWithMembers } from '@/lib/types/project.types';
+import type { User } from '@/lib/types/user.types';
+import type { ProjectFormValues } from '@/lib/validators/project.schema';
+
+export default function ProjectsPage() {
+  const [projects, setProjects] = useState<ProjectWithMembers[]>([]);
+  const [knownMembers, setKnownMembers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectWithMembers | null>(null);
+  const [assigningProject, setAssigningProject] = useState<ProjectWithMembers | null>(null);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [nextProjects, reportsData] = await Promise.all([
+        getProjects(),
+        getReports({ perPage: 100 })
+      ]);
+
+      const projectsWithMembers = await Promise.all(
+        nextProjects.map(async (project) => {
+          try {
+            const members = await getProjectMembers(project.id);
+            return { ...project, members, memberCount: members.length };
+          } catch {
+            return { ...project, members: [], memberCount: 0 };
+          }
+        })
+      );
+
+      const memberMap = new Map<number, User>();
+      reportsData.reports.forEach((report) => {
+        if (report.user) memberMap.set(report.user.id, report.user);
+      });
+      projectsWithMembers.forEach((project) => {
+        project.members?.forEach((member) => memberMap.set(member.id, member));
+      });
+
+      setProjects(projectsWithMembers);
+      setKnownMembers(Array.from(memberMap.values()).filter((member) => member.role === 'team_member'));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Could not load projects'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const sortedProjects = useMemo(() => (
+    [...projects].sort((a, b) => a.name.localeCompare(b.name))
+  ), [projects]);
+
+  const saveProject = async (values: ProjectFormValues) => {
+    setSaving(true);
+    try {
+      if (editingProject) {
+        await updateProject(editingProject.id, values);
+        toast.success('Project updated');
+      } else {
+        await createProject(values);
+        toast.success('Project created');
+      }
+      setProjectModalOpen(false);
+      setEditingProject(null);
+      await load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Could not save project'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const assignMembers = async (userIds: number[]) => {
+    if (!assigningProject) return;
+    setSaving(true);
+    try {
+      await Promise.all(userIds.map((userId) => assignUserToProject(assigningProject.id, userId)));
+      toast.success('Members assigned');
+      setAssigningProject(null);
+      await load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Could not assign members'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deactivate = async (project: ProjectWithMembers) => {
+    setSaving(true);
+    try {
+      await deactivateProject(project.id);
+      toast.success('Project deactivated');
+      await load();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Could not deactivate project'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <Spinner label="Loading projects" />;
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="section-title">Projects</h2>
+          <p className="section-subtitle">Create projects and manage team member assignment.</p>
+        </div>
+        <Button
+          type="button"
+          onClick={() => {
+            setEditingProject(null);
+            setProjectModalOpen(true);
+          }}
+        >
+          <Plus className="h-4 w-4" />
+          Add project
+        </Button>
+      </div>
+
+      {sortedProjects.length === 0 ? (
+        <EmptyState title="No projects yet" description="Add the first project before team members submit reports." />
+      ) : (
+        <ProjectTable
+          projects={sortedProjects}
+          onEdit={(project) => {
+            setEditingProject(project);
+            setProjectModalOpen(true);
+          }}
+          onAssign={setAssigningProject}
+          onDeactivate={deactivate}
+        />
+      )}
+
+      <ProjectFormModal
+        open={projectModalOpen}
+        project={editingProject}
+        saving={saving}
+        onClose={() => {
+          setProjectModalOpen(false);
+          setEditingProject(null);
+        }}
+        onSubmit={saveProject}
+      />
+
+      <AssignMemberModal
+        open={Boolean(assigningProject)}
+        project={assigningProject}
+        members={knownMembers}
+        saving={saving}
+        onClose={() => setAssigningProject(null)}
+        onAssign={assignMembers}
+      />
+    </div>
+  );
+}
