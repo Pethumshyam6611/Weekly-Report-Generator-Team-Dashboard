@@ -2,8 +2,8 @@ const projectService = require('../services/project.service');
 const asyncHandler = require('../utils/asyncHandler');
 const { successResponse } = require('../utils/apiResponse');
 
-const listProjects = asyncHandler(async (_req, res) => {
-  const projects = await projectService.listActiveProjects();
+const listProjects = asyncHandler(async (req, res) => {
+  const projects = await projectService.listProjectsForUser(req.user);
   return successResponse(res, { projects }, 'Projects fetched successfully');
 });
 

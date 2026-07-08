@@ -11,10 +11,17 @@ const getWeekStart = (value = new Date()) => {
   return date.toISOString().slice(0, 10);
 };
 
-const getSummary = async ({ week } = {}) => {
+const getSummary = async ({ week, projectId } = {}) => {
   const weekStart = week ? dateOnly(week) : getWeekStart();
+  const selectedProjectId = projectId ? Number(projectId) : null;
+  const assignmentWhere = selectedProjectId ? { project_id: selectedProjectId } : {};
+  const reportWhere = {
+    week_start: weekStart,
+    ...(selectedProjectId ? { project_id: selectedProjectId } : {})
+  };
 
   const expectedReports = await UserProject.count({
+    where: assignmentWhere,
     include: [
       {
         model: User,
@@ -27,7 +34,7 @@ const getSummary = async ({ week } = {}) => {
 
   const submittedReports = await Report.count({
     where: {
-      week_start: weekStart,
+      ...reportWhere,
       status: {
         [Op.in]: ['submitted', 'late']
       }
@@ -36,7 +43,7 @@ const getSummary = async ({ week } = {}) => {
 
   const openBlockers = await Report.count({
     where: {
-      week_start: weekStart,
+      ...reportWhere,
       [Op.and]: [
         { blockers: { [Op.not]: null } },
         { blockers: { [Op.ne]: '' } }
@@ -53,8 +60,9 @@ const getSummary = async ({ week } = {}) => {
   };
 };
 
-const getSubmissionStatus = async ({ week } = {}) => {
+const getSubmissionStatus = async ({ week, projectId } = {}) => {
   const weekStart = week ? dateOnly(week) : getWeekStart();
+  const selectedProjectId = projectId ? Number(projectId) : null;
   const members = await User.findAll({
     where: { role: 'team_member' },
     attributes: ['id', 'name', 'email', 'role'],
@@ -63,9 +71,12 @@ const getSubmissionStatus = async ({ week } = {}) => {
         model: Project,
         as: 'projects',
         attributes: ['id', 'name'],
-        where: { is_active: true },
+        where: {
+          is_active: true,
+          ...(selectedProjectId ? { id: selectedProjectId } : {})
+        },
         through: { attributes: [] },
-        required: false
+        required: Boolean(selectedProjectId)
       }
     ],
     order: [['name', 'ASC']]
@@ -74,7 +85,8 @@ const getSubmissionStatus = async ({ week } = {}) => {
   const reports = await Report.findAll({
     where: {
       week_start: weekStart,
-      user_id: members.map((member) => member.id)
+      user_id: members.map((member) => member.id),
+      ...(selectedProjectId ? { project_id: selectedProjectId } : {})
     }
   });
 
@@ -113,7 +125,7 @@ const getSubmissionStatus = async ({ week } = {}) => {
   };
 };
 
-const getTasksTrend = async ({ userId, startDate, endDate } = {}) => {
+const getTasksTrend = async ({ userId, projectId, startDate, endDate } = {}) => {
   const defaultEnd = getWeekStart();
   const defaultStartDate = new Date(`${defaultEnd}T00:00:00.000Z`);
   defaultStartDate.setUTCDate(defaultStartDate.getUTCDate() - 49);
@@ -127,6 +139,10 @@ const getTasksTrend = async ({ userId, startDate, endDate } = {}) => {
 
   if (userId) {
     where.user_id = Number(userId);
+  }
+
+  if (projectId) {
+    where.project_id = Number(projectId);
   }
 
   const rows = await Report.findAll({
@@ -147,10 +163,13 @@ const getTasksTrend = async ({ userId, startDate, endDate } = {}) => {
   }));
 };
 
-const getWorkloadDistribution = async ({ week } = {}) => {
+const getWorkloadDistribution = async ({ week, projectId } = {}) => {
   const where = {};
   if (week) {
     where.week_start = dateOnly(week);
+  }
+  if (projectId) {
+    where.project_id = Number(projectId);
   }
 
   const rows = await Report.findAll({
@@ -184,12 +203,18 @@ const getWorkloadDistribution = async ({ week } = {}) => {
 
 const getRecentActivity = async (filters = {}) => {
   const pagination = parsePagination(filters);
+  const where = {
+    submitted_at: {
+      [Op.not]: null
+    }
+  };
+
+  if (filters.projectId) {
+    where.project_id = Number(filters.projectId);
+  }
+
   const { rows, count } = await Report.findAndCountAll({
-    where: {
-      submitted_at: {
-        [Op.not]: null
-      }
-    },
+    where,
     include: [
       { model: Project, as: 'project' },
       { model: User, as: 'user', attributes: ['id', 'name', 'email', 'role'] }
