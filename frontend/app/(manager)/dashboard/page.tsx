@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters';
 import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed';
@@ -44,12 +44,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setLoading(true);
+    const selectedProjectId = projectId || undefined;
     Promise.all([
-      getDashboardSummary({ week }),
-      getSubmissionStatus({ week }),
-      getTasksTrend(),
-      getWorkloadDistribution({ week }),
-      getRecentActivity({ perPage: 8 }),
+      getDashboardSummary({ week, projectId: selectedProjectId }),
+      getSubmissionStatus({ week, projectId: selectedProjectId }),
+      getTasksTrend({ projectId: selectedProjectId }),
+      getWorkloadDistribution({ week, projectId: selectedProjectId }),
+      getRecentActivity({ perPage: 8, projectId: selectedProjectId }),
       getProjects()
     ])
       .then(([nextSummary, nextStatus, nextTrend, nextWorkload, nextActivity, nextProjects]) => {
@@ -62,18 +63,7 @@ export default function DashboardPage() {
       })
       .catch((error) => toast.error(getApiErrorMessage(error, 'Could not load dashboard')))
       .finally(() => setLoading(false));
-  }, [week]);
-
-  const filteredWorkload = useMemo(() => {
-    if (!projectId) return workload;
-    return workload.filter((item) => item.projectId === Number(projectId));
-  }, [projectId, workload]);
-
-  const filteredActivity = useMemo(() => {
-    const rows = activity?.activity || [];
-    if (!projectId) return rows;
-    return rows.filter((report) => report.project_id === Number(projectId));
-  }, [activity, projectId]);
+  }, [projectId, week]);
 
   if (loading) {
     return <Spinner label="Loading dashboard" />;
@@ -82,6 +72,8 @@ export default function DashboardPage() {
   if (!summary || !status) {
     return <EmptyState title="Dashboard unavailable" description="Try again after the backend API is reachable." />;
   }
+
+  const activityRows = activity?.activity || [];
 
   return (
     <div className="space-y-5">
@@ -108,8 +100,8 @@ export default function DashboardPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <TasksTrendChart data={trend} />
         <SubmissionStatusChart members={status.members} />
-        <WorkloadDistributionChart data={filteredWorkload} />
-        <RecentActivityFeed activity={filteredActivity} />
+        <WorkloadDistributionChart data={workload} />
+        <RecentActivityFeed activity={activityRows} />
       </div>
     </div>
   );
