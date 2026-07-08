@@ -5,11 +5,11 @@ import type { AiHistoryItem } from '@/lib/types/ai.types';
 
 export function ChatHistoryPanel({ history }: { history: AiHistoryItem[] }) {
   return (
-    <Card>
+    <Card className="flex h-[620px] flex-col overflow-hidden">
       <CardHeader>
         <h2 className="text-sm font-semibold text-ink">Previous questions</h2>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-0 flex-1 overflow-y-auto">
         {history.length === 0 ? (
           <EmptyState title="No chat history" description="Questions you ask the assistant will be saved here." />
         ) : (

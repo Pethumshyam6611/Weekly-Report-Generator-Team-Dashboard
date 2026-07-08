@@ -31,7 +31,7 @@ export default function AiAssistantPage() {
         <p className="section-subtitle">Ask natural-language questions over weekly report data.</p>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_380px]">
         <ChatWidget onAnswered={loadHistory} />
         {loading ? <Spinner label="Loading chat history" /> : <ChatHistoryPanel history={history} />}
       </div>
