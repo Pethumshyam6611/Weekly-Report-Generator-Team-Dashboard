@@ -3,13 +3,45 @@ const { UniqueConstraintError, ValidationError, ForeignKeyConstraintError } = re
 const { ApiError, errorResponse } = require('../utils/apiResponse');
 const env = require('../config/env');
 
+const getUniqueConstraintResponse = (error) => {
+  const fields = Object.keys(error.fields || {});
+  const hasFields = (...requiredFields) => requiredFields.every((field) => fields.includes(field));
+
+  if (hasFields('email')) {
+    return {
+      code: 'EMAIL_EXISTS',
+      message: 'An account with this email already exists. Please log in or use another email.'
+    };
+  }
+
+  if (hasFields('user_id', 'project_id', 'week_start')) {
+    return {
+      code: 'REPORT_ALREADY_EXISTS',
+      message: 'You already have a report for this project and week. Please open the existing report and edit the draft instead.'
+    };
+  }
+
+  if (hasFields('user_id', 'project_id')) {
+    return {
+      code: 'PROJECT_ASSIGNMENT_EXISTS',
+      message: 'This team member is already assigned to this project.'
+    };
+  }
+
+  return {
+    code: 'DUPLICATE_RECORD',
+    message: 'This item already exists. Please check the existing record before trying again.'
+  };
+};
+
 const errorHandler = (error, _req, res, _next) => {
   if (error instanceof ApiError) {
     return errorResponse(res, error.statusCode, error.code, error.message, error.details);
   }
 
   if (error instanceof UniqueConstraintError) {
-    return errorResponse(res, 409, 'CONFLICT', 'A record with these values already exists');
+    const conflict = getUniqueConstraintResponse(error);
+    return errorResponse(res, 409, conflict.code, conflict.message);
   }
 
   if (error instanceof ForeignKeyConstraintError) {
