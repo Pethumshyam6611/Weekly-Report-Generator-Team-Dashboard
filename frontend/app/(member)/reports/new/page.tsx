@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { ProjectReportPicker } from '@/components/reports/ProjectReportPicker';
 import { ReportForm } from '@/components/reports/ReportForm';
 import { Spinner } from '@/components/ui/Spinner';
 import { getApiErrorMessage } from '@/lib/api/axiosClient';
@@ -14,6 +15,7 @@ import type { ReportPayload } from '@/lib/types/report.types';
 export default function NewReportPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -61,7 +63,28 @@ export default function NewReportPage() {
         <h2 className="section-title">New weekly report</h2>
         <p className="section-subtitle">Save a draft or submit it for manager review.</p>
       </div>
-      <ReportForm projects={projects} onSaveDraft={saveDraft} onSubmitReport={createAndSubmit} saving={saving} />
+
+      <ProjectReportPicker
+        projects={projects}
+        selectedProjectId={selectedProject?.id}
+        onSelect={(project) => setSelectedProject(project)}
+      />
+
+      {selectedProject ? (
+        <ReportForm
+          projects={projects}
+          selectedProject={selectedProject}
+          hideProjectSelect
+          onSaveDraft={saveDraft}
+          onSubmitReport={createAndSubmit}
+          saving={saving}
+        />
+      ) : (
+        <div className="rounded-panel border border-dashed border-line bg-white px-4 py-8 text-center">
+          <p className="text-sm font-medium text-ink">Choose an active project to continue</p>
+          <p className="mt-1 text-sm text-ink-muted">The report form will open after selecting a project.</p>
+        </div>
+      )}
     </div>
   );
 }

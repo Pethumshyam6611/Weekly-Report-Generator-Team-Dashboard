@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { ReportForm } from '@/components/reports/ReportForm';
+import { ReportReadOnlyView } from '@/components/reports/ReportReadOnlyView';
 import { Spinner } from '@/components/ui/Spinner';
 import { getApiErrorMessage } from '@/lib/api/axiosClient';
 import { getProjects } from '@/lib/api/projects.api';
@@ -65,15 +66,31 @@ export default function ReportDetailsPage() {
     return <p className="text-sm text-ink-muted">Report not found.</p>;
   }
 
+  if (report.status !== 'draft') {
+    return (
+      <div className="space-y-5">
+        <div>
+          <h2 className="section-title">Weekly report</h2>
+          <p className="section-subtitle">Submitted reports are locked for manager review.</p>
+        </div>
+        <ReportReadOnlyView report={report} />
+      </div>
+    );
+  }
+
+  const reportProject = report.project || projects.find((project) => project.id === report.project_id) || null;
+
   return (
     <div className="space-y-5">
       <div>
         <h2 className="section-title">Weekly report</h2>
-        <p className="section-subtitle">Review details, update the draft, or submit when ready.</p>
+        <p className="section-subtitle">Update the draft or submit when ready.</p>
       </div>
       <ReportForm
         projects={projects}
         initialReport={report}
+        selectedProject={reportProject}
+        hideProjectSelect
         onSaveDraft={saveDraft}
         onSubmitReport={updateAndSubmit}
         saving={saving}

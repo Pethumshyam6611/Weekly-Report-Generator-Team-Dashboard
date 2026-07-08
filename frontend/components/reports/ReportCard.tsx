@@ -15,7 +15,14 @@ export function ReportCard({ report }: { report: Report }) {
               <p className="text-sm font-semibold text-ink">
                 {formatWeekRange(report.week_start, report.week_end)}
               </p>
-              <p className="mt-1 text-xs text-ink-muted">{report.project?.name || 'Project'}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-ink-muted">{report.project?.name || 'Project'}</span>
+                {report.project ? (
+                  <Badge status={report.project.is_active ? 'active' : 'inactive'}>
+                    {report.project.is_active ? 'active' : 'inactive'}
+                  </Badge>
+                ) : null}
+              </div>
             </div>
             <Badge status={report.status}>{report.status}</Badge>
           </div>
