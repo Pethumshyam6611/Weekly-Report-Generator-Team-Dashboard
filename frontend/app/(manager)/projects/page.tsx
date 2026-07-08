@@ -18,7 +18,7 @@ import {
   getProjects,
   updateProject
 } from '@/lib/api/projects.api';
-import { getReports } from '@/lib/api/reports.api';
+import { getTeamMembers } from '@/lib/api/users.api';
 import type { ProjectWithMembers } from '@/lib/types/project.types';
 import type { User } from '@/lib/types/user.types';
 import type { ProjectFormValues } from '@/lib/validators/project.schema';
@@ -35,9 +35,9 @@ export default function ProjectsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [nextProjects, reportsData] = await Promise.all([
+      const [nextProjects, teamMembers] = await Promise.all([
         getProjects(),
-        getReports({ perPage: 100 })
+        getTeamMembers()
       ]);
 
       const projectsWithMembers = await Promise.all(
@@ -51,16 +51,8 @@ export default function ProjectsPage() {
         })
       );
 
-      const memberMap = new Map<number, User>();
-      reportsData.reports.forEach((report) => {
-        if (report.user) memberMap.set(report.user.id, report.user);
-      });
-      projectsWithMembers.forEach((project) => {
-        project.members?.forEach((member) => memberMap.set(member.id, member));
-      });
-
       setProjects(projectsWithMembers);
-      setKnownMembers(Array.from(memberMap.values()).filter((member) => member.role === 'team_member'));
+      setKnownMembers(teamMembers);
     } catch (error) {
       toast.error(getApiErrorMessage(error, 'Could not load projects'));
     } finally {
