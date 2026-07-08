@@ -2,10 +2,25 @@ const { User, Project, UserProject } = require('../models');
 const { ApiError } = require('../utils/apiResponse');
 const { sanitizeUser } = require('./auth.service');
 
-const listActiveProjects = async () => {
+const listProjectsForUser = async (requester) => {
+  if (requester.role === 'manager') {
+    return Project.findAll({
+      order: [['is_active', 'DESC'], ['name', 'ASC']]
+    });
+  }
+
   return Project.findAll({
-    where: { is_active: true },
-    order: [['name', 'ASC']]
+    include: [
+      {
+        model: User,
+        as: 'members',
+        attributes: [],
+        where: { id: requester.id },
+        through: { attributes: [] },
+        required: true
+      }
+    ],
+    order: [['is_active', 'DESC'], ['name', 'ASC']]
   });
 };
 
@@ -20,7 +35,7 @@ const createProject = async (managerId, payload) => {
 
 const updateProject = async (projectId, payload) => {
   const project = await Project.findByPk(projectId);
-  if (!project || !project.is_active) {
+  if (!project) {
     throw new ApiError(404, 'PROJECT_NOT_FOUND', 'Project not found');
   }
 
@@ -34,7 +49,7 @@ const updateProject = async (projectId, payload) => {
 
 const softDeleteProject = async (projectId) => {
   const project = await Project.findByPk(projectId);
-  if (!project || !project.is_active) {
+  if (!project) {
     throw new ApiError(404, 'PROJECT_NOT_FOUND', 'Project not found');
   }
 
@@ -82,7 +97,7 @@ const listProjectMembers = async (projectId) => {
     ]
   });
 
-  if (!project || !project.is_active) {
+  if (!project) {
     throw new ApiError(404, 'PROJECT_NOT_FOUND', 'Project not found');
   }
 
@@ -90,7 +105,7 @@ const listProjectMembers = async (projectId) => {
 };
 
 module.exports = {
-  listActiveProjects,
+  listProjectsForUser,
   createProject,
   updateProject,
   softDeleteProject,
