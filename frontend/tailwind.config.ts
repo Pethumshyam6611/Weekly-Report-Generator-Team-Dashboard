@@ -10,35 +10,35 @@ const config: Config = {
     extend: {
       colors: {
         surface: {
-          page: '#F8F7FB',
-          panel: '#FFFFFF',
-          subtle: '#F1EDFB'
+          page: 'rgb(var(--color-surface-page) / <alpha-value>)',
+          panel: 'rgb(var(--color-surface-panel) / <alpha-value>)',
+          subtle: 'rgb(var(--color-surface-subtle) / <alpha-value>)'
         },
         ink: {
-          DEFAULT: '#1A1A1F',
-          muted: '#6B6B76',
-          faint: '#8B8796'
+          DEFAULT: 'rgb(var(--color-ink) / <alpha-value>)',
+          muted: 'rgb(var(--color-ink-muted) / <alpha-value>)',
+          faint: 'rgb(var(--color-ink-faint) / <alpha-value>)'
         },
-        line: '#E5E3EC',
+        line: 'rgb(var(--color-line) / <alpha-value>)',
         brand: {
-          DEFAULT: '#5B3FA6',
-          hover: '#4F3593',
-          soft: '#F1EDFB',
-          border: '#D9CEF3'
+          DEFAULT: 'rgb(var(--color-brand) / <alpha-value>)',
+          hover: 'rgb(var(--color-brand-hover) / <alpha-value>)',
+          soft: 'rgb(var(--color-brand-soft) / <alpha-value>)',
+          border: 'rgb(var(--color-brand-border) / <alpha-value>)'
         },
         status: {
-          submitted: '#18794E',
-          submittedBg: '#EAF7F0',
-          pending: '#9A6700',
-          pendingBg: '#FFF5D6',
-          late: '#B42318',
-          lateBg: '#FDECEC',
-          draft: '#5D5A66',
-          draftBg: '#F1F0F4'
+          submitted: 'rgb(var(--color-status-submitted) / <alpha-value>)',
+          submittedBg: 'rgb(var(--color-status-submitted-bg) / <alpha-value>)',
+          pending: 'rgb(var(--color-status-pending) / <alpha-value>)',
+          pendingBg: 'rgb(var(--color-status-pending-bg) / <alpha-value>)',
+          late: 'rgb(var(--color-status-late) / <alpha-value>)',
+          lateBg: 'rgb(var(--color-status-late-bg) / <alpha-value>)',
+          draft: 'rgb(var(--color-status-draft) / <alpha-value>)',
+          draftBg: 'rgb(var(--color-status-draft-bg) / <alpha-value>)'
         }
       },
       boxShadow: {
-        subtle: '0 1px 2px rgba(0, 0, 0, 0.04)'
+        subtle: 'var(--shadow-subtle)'
       },
       borderRadius: {
         panel: '8px'
