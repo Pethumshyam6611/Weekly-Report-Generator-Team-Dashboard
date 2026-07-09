@@ -86,6 +86,35 @@ const assignUserToProject = async (projectId, userId) => {
   };
 };
 
+const unassignUserFromProject = async (projectId, userId) => {
+  const project = await Project.findByPk(projectId);
+  if (!project) {
+    throw new ApiError(404, 'PROJECT_NOT_FOUND', 'Project not found');
+  }
+
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new ApiError(404, 'USER_NOT_FOUND', 'User not found');
+  }
+
+  const assignment = await UserProject.findOne({
+    where: {
+      user_id: userId,
+      project_id: projectId
+    }
+  });
+
+  if (!assignment) {
+    throw new ApiError(404, 'ASSIGNMENT_NOT_FOUND', 'This user is not assigned to the selected project');
+  }
+
+  await assignment.destroy();
+  return {
+    projectId,
+    userId
+  };
+};
+
 const listProjectMembers = async (projectId) => {
   const project = await Project.findByPk(projectId, {
     include: [
@@ -110,5 +139,6 @@ module.exports = {
   updateProject,
   softDeleteProject,
   assignUserToProject,
+  unassignUserFromProject,
   listProjectMembers
 };

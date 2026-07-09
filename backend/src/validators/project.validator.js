@@ -4,6 +4,11 @@ const projectIdParam = [
   param('id').isInt({ min: 1 }).withMessage('Project id must be a positive integer')
 ];
 
+const projectMemberParam = [
+  ...projectIdParam,
+  param('userId').isInt({ min: 1 }).withMessage('User id must be a positive integer')
+];
+
 const createProjectValidator = [
   body('name').trim().notEmpty().withMessage('Project name is required').isLength({ max: 255 }),
   body('description').optional({ nullable: true }).isString()
@@ -23,6 +28,7 @@ const assignProjectValidator = [
 
 module.exports = {
   projectIdParam,
+  projectMemberParam,
   createProjectValidator,
   updateProjectValidator,
   assignProjectValidator
