@@ -60,6 +60,14 @@ Because Next.js middleware cannot read `localStorage`, the app also writes non-s
 
 The frontend matches the backend rule: only draft reports are editable. Once a report is submitted, the form becomes read-only and shows a submitted-report banner.
 
+## Project Assignment Rule
+
+Managers can assign team members to projects and remove existing assignments from the project management screen. Team members only see projects assigned to them, and inactive projects are displayed as unavailable for new reports.
+
+## AI Response Formatting
+
+The AI assistant displays report answers as readable chat messages. Lines returned as `- item` or `* item` are rendered as bullet lists so manager summaries stay easy to scan.
+
 ## Pages
 
 | Path | Role | Purpose |
@@ -70,13 +78,20 @@ The frontend matches the backend rule: only draft reports are editable. Once a r
 | `/reports/new` | Team member | Create a draft report or submit immediately. |
 | `/reports/[id]` | Team member | View or edit an owned draft report. |
 | `/dashboard` | Manager | Summary metrics, charts, filters, and recent activity. |
-| `/team-reports` | Manager | Filterable paginated team report table. |
-| `/projects` | Manager | Project CRUD and member assignment. |
-| `/ai-assistant` | Manager | Gemini-backed report assistant and chat history. |
+| `/team-reports` | Manager | Filterable team report inbox with selected-report detail review. |
+| `/projects` | Manager | Project CRUD, member assignment, and member unassignment. |
+| `/ai-assistant` | Manager | Gemini-backed report assistant with scrollable chat history. |
 
 ## API Integration
 
 All HTTP calls live in `lib/api/*.api.ts`. Components and pages call typed API helper functions rather than axios or fetch directly.
+
+Project management uses:
+
+- `assignUserToProject(projectId, userId)` for `POST /projects/:id/assign`
+- `unassignUserFromProject(projectId, userId)` for `DELETE /projects/:id/members/:userId`
+
+Dashboard data accepts `projectId` where supported by the backend so charts, submission status, and activity match the selected project filter.
 
 The axios client in `lib/api/axiosClient.ts`:
 
