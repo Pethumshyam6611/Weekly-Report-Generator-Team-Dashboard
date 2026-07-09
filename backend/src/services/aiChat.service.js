@@ -91,11 +91,24 @@ const mapReportForGemini = (report) => ({
   submittedAt: report.submitted_at
 });
 
+const normalizeAnswerFormatting = (answer = '') => {
+  return String(answer)
+    .replace(/^\s*\*\s+/gm, '- ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+};
+
 const buildAnswerPrompt = (question, reports) => `
 You are a concise team reporting assistant for managers.
 Answer the question using only the report context provided.
 If the context is insufficient, say what is missing.
 Do not reveal sensitive information.
+Format the answer for a dashboard chat UI:
+- Start with a short direct summary sentence.
+- Use hyphen bullet points for lists.
+- Do not use asterisks for bullets or emphasis.
+- Keep related points grouped and easy to scan.
+- Avoid markdown tables.
 
 Question:
 ${question}
@@ -128,7 +141,7 @@ const queryReportsWithAi = async (managerId, question) => {
     };
   }
 
-  const answer = await geminiService.generateText(buildAnswerPrompt(question, safeReports));
+  const answer = normalizeAnswerFormatting(await geminiService.generateText(buildAnswerPrompt(question, safeReports)));
 
   await AiQueryLog.create({
     manager_id: managerId,

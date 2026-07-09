@@ -29,6 +29,11 @@ const assignProject = asyncHandler(async (req, res) => {
   return successResponse(res, { assignment: result.assignment }, message, statusCode);
 });
 
+const unassignProject = asyncHandler(async (req, res) => {
+  const assignment = await projectService.unassignUserFromProject(Number(req.params.id), Number(req.params.userId));
+  return successResponse(res, { assignment }, 'User unassigned from project successfully');
+});
+
 const listMembers = asyncHandler(async (req, res) => {
   const members = await projectService.listProjectMembers(Number(req.params.id));
   return successResponse(res, { members }, 'Project members fetched successfully');
@@ -40,5 +45,6 @@ module.exports = {
   updateProject,
   deleteProject,
   assignProject,
+  unassignProject,
   listMembers
 };
