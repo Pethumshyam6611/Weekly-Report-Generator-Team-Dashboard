@@ -7,7 +7,23 @@ Full-stack web application for weekly team reporting, manager dashboards, projec
 ```text
 backend/   Express.js + Sequelize + MySQL REST API
 frontend/  Next.js + TypeScript + TailwindCSS client app
+docs/      ER diagram and supporting documentation assets
 ```
+
+## ER Diagram
+
+![Weekly Report Generator ER Diagram](docs/er-diagram.jpg)
+
+**Diagram type:** Crow's Foot Entity Relationship Diagram (logical database schema ERD).
+
+The ER diagram shows the main database entities and relationships used by the platform:
+
+- `users` stores both managers and team members using the `role` field.
+- `projects` are created by managers and can be active or inactive.
+- `user_projects` is the join table that supports the many-to-many relationship between team members and projects.
+- `reports` stores weekly progress, planned tasks, blockers, hours, notes, and submission status.
+- `refresh_tokens` stores hashed refresh tokens for authentication sessions.
+- `ai_query_logs` stores manager AI questions, generated answers, and context metadata.
 
 ## Prerequisites
 
