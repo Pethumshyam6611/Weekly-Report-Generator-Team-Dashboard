@@ -118,9 +118,12 @@ GET /health
 - A user can register as `manager` only when the request includes `managerInviteCode` matching `MANAGER_INVITE_CODE`.
 - Team members can create reports only for projects they are assigned to.
 - Team members can edit only their own draft reports. Submitted or late reports are locked.
+- Managers can assign and unassign team members from projects.
+- Dashboard endpoints accept `projectId` where relevant so summary metrics, charts, activity, and submission status can be filtered to one project.
 - Submitting a report sets `submitted_at`. If the submit time is later than `weekEnd + REPORT_GRACE_DAYS`, the status becomes `late`; otherwise it becomes `submitted`.
 - Refresh tokens are stored as SHA-256 hashes. Raw refresh tokens are never stored.
 - Gemini context excludes password hashes, refresh tokens, and sensitive account fields.
+- Gemini answers are normalized for the chat UI so list responses use hyphen bullets instead of raw asterisk bullets.
 
 ## Response Shape
 
@@ -153,17 +156,18 @@ Error:
 | `DELETE` | `/api/projects/:id` | Manager | Soft delete a project by setting `is_active = false`. |
 | `POST` | `/api/projects/:id/assign` | Manager | Assign a user to a project. |
 | `GET` | `/api/projects/:id/members` | Manager | List project members. |
+| `DELETE` | `/api/projects/:id/members/:userId` | Manager | Remove a team member assignment from a project. |
 | `POST` | `/api/reports` | Team member | Create a draft report for an assigned project. |
 | `PUT` | `/api/reports/:id` | Owner | Edit an owned draft report. |
 | `POST` | `/api/reports/:id/submit` | Owner | Submit an owned draft report and set status. |
 | `GET` | `/api/reports/me` | Authenticated | Paginated report history for the logged-in user. Filters: `projectId`, `startDate`, `endDate`. |
 | `GET` | `/api/reports` | Manager | Paginated team reports. Filters: `week`, `userId`, `projectId`, `startDate`, `endDate`. |
 | `GET` | `/api/reports/:id` | Owner or manager | Fetch one report. |
-| `GET` | `/api/dashboard/summary` | Manager | Weekly submitted count, expected count, compliance rate, and open blockers. |
-| `GET` | `/api/dashboard/submission-status` | Manager | Per-member and per-project submission status for a week. |
-| `GET` | `/api/dashboard/tasks-trend` | Manager | Weekly report count and hours trend. Filters: `userId`, `startDate`, `endDate`. |
-| `GET` | `/api/dashboard/workload-distribution` | Manager | Report, hour, and blocker counts grouped by project. Optional `week`. |
-| `GET` | `/api/dashboard/recent-activity` | Manager | Recent submitted reports, paginated. |
+| `GET` | `/api/dashboard/summary` | Manager | Weekly submitted count, expected count, compliance rate, and open blockers. Filters: `week`, `projectId`. |
+| `GET` | `/api/dashboard/submission-status` | Manager | Per-member and per-project submission status for a week. Filters: `week`, `projectId`. |
+| `GET` | `/api/dashboard/tasks-trend` | Manager | Weekly report count and hours trend. Filters: `userId`, `projectId`, `startDate`, `endDate`. |
+| `GET` | `/api/dashboard/workload-distribution` | Manager | Report, hour, and blocker counts grouped by project. Filters: `week`, `projectId`. |
+| `GET` | `/api/dashboard/recent-activity` | Manager | Recent submitted reports, paginated. Filters: `projectId`. |
 | `POST` | `/api/ai-chat/query` | Manager | Ask Gemini a question over filtered report context. Body: `{ "question": "..." }`. |
 | `GET` | `/api/ai-chat/history` | Manager | Paginated AI query history for the current manager. |
 
