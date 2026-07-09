@@ -54,7 +54,7 @@ Because Next.js middleware cannot read `localStorage`, the app also writes non-s
 - Team members can access `/reports`, `/reports/new`, and `/reports/[id]`.
 - Managers are redirected away from member report routes to `/dashboard`.
 - Team members are redirected away from manager routes to `/reports`.
-- Manager accounts are not created through the public register form. The backend supports manager registration through `MANAGER_INVITE_CODE` or seed data.
+- Team members can register directly. Manager registration is available from the register form only when the user selects Manager and enters the private `MANAGER_INVITE_CODE` configured in the backend.
 
 ## Report Editing Rule
 
@@ -73,7 +73,7 @@ The AI assistant displays report answers as readable chat messages. Lines return
 | Path | Role | Purpose |
 | --- | --- | --- |
 | `/login` | Public | Log in and route by role. |
-| `/register` | Public | Create a team member account. |
+| `/register` | Public | Create a team member account, or create a manager account with the configured invite code. |
 | `/reports` | Team member | Personal report history grouped by week. |
 | `/reports/new` | Team member | Create a draft report or submit immediately. |
 | `/reports/[id]` | Team member | View or edit an owned draft report. |

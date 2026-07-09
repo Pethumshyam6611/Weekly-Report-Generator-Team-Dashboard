@@ -88,6 +88,7 @@ export default function RegisterPage() {
                     label="Manager invite code"
                     type="password"
                     autoComplete="off"
+                    showPasswordToggle
                     error={errors.managerInviteCode?.message}
                     {...register('managerInviteCode')}
                   />
@@ -96,6 +97,7 @@ export default function RegisterPage() {
                   label="Password"
                   type="password"
                   autoComplete="new-password"
+                  showPasswordToggle
                   error={errors.password?.message}
                   {...register('password')}
                 />
@@ -103,6 +105,7 @@ export default function RegisterPage() {
                   label="Confirm password"
                   type="password"
                   autoComplete="new-password"
+                  showPasswordToggle
                   error={errors.confirmPassword?.message}
                   {...register('confirmPassword')}
                 />

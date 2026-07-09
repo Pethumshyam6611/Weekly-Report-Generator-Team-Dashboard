@@ -67,6 +67,7 @@ export default function LoginPage() {
                   label="Password"
                   type="password"
                   autoComplete="current-password"
+                  showPasswordToggle
                   error={errors.password?.message}
                   {...register('password')}
                 />

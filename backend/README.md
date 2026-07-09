@@ -69,22 +69,42 @@ Seeded users:
 
 | Role | Name | Email | Password |
 | --- | --- | --- | --- |
-| Manager | Pethum Manager | `pethumshayam66@gmail.com` | `Pass661122` |
-| Team member | Akash TeamMember | `akashuvindu@gmail.com` | `Pass661122` |
+| Manager | Maya Manager | `manager@gmail.com` | `Password1234` |
+| Team member | Pethum Shyam | `pethumshayam66@gmail.com` | `Password1234` |
+| Team member | Akash Uvindu | `akashuvindu@gmail.com` | `Password1234` |
+| Team member | Hiruni Perera | `hiruniperera@gmail.com` | `Password1234` |
+| Team member | Kasun Silva | `kasunsilva@gmail.com` | `Password1234` |
+| Team member | Nethmi Fernando | `nethmifernando@gmail.com` | `Password1234` |
+| Team member | Dinuka Jayasinghe | `dinukajayasinghe@gmail.com` | `Password1234` |
+| Team member | Tharushi Wijesinghe | `tharushiwijesinghe@gmail.com` | `Password1234` |
+| Team member | Ravindu Perera | `ravinduperera@gmail.com` | `Password1234` |
+| Team member | Sahan Madushan | `sahanmadushan@gmail.com` | `Password1234` |
 
 The seeder also creates these projects:
 
-| Project | Status | Assigned team member |
-| --- | --- | --- |
-| Internal Dashboard | Active | Akash TeamMember |
-| API Stabilization | Active | Akash TeamMember |
+| Project | Status |
+| --- | --- |
+| Internal Dashboard | Active |
+| Inventory | Active |
+| API Stabilization | Active |
+| Client Portal | Active |
+| Mobile Timesheets | Active |
+| QA Automation | Active |
+| Legacy CRM Migration | Inactive |
 
-Seeded reports:
+The sample dataset includes multiple project assignments and submitted, draft, and late weekly reports across the seeded team members. This seeder is intended for local demo preparation: it clears existing application data from `users`, `projects`, `user_projects`, `reports`, `refresh_tokens`, and `ai_query_logs` before inserting the fresh sample dataset. Do not run it against production data.
 
-| Project | Week | Status | Notes |
-| --- | --- | --- | --- |
-| Internal Dashboard | 2026-06-29 to 2026-07-05 | Submitted | Dashboard summary and report filter work. |
-| API Stabilization | 2026-06-29 to 2026-07-05 | Draft | Auth middleware review with a Gemini API key blocker. |
+Manager self-registration:
+
+```json
+{
+  "name": "New Manager",
+  "email": "newmanager@gmail.com",
+  "password": "Password1234",
+  "role": "manager",
+  "managerInviteCode": "value_from_MANAGER_INVITE_CODE"
+}
+```
 
 To remove seeded data:
 

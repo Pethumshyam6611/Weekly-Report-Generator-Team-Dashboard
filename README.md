@@ -53,9 +53,12 @@ http://localhost:5000
 Seeded login users:
 
 ```text
-Manager:      manager@example.com / Password123!
-Team member:  member@example.com  / Password123!
+Manager:      manager@gmail.com          / Password1234
+Team member:  pethumshayam66@gmail.com  / Password1234
+Team member:  akashuvindu@gmail.com     / Password1234
 ```
+
+To register a new manager from the frontend register page, set `MANAGER_INVITE_CODE` in `backend/.env` and enter the same private code when selecting the Manager account type.
 
 ## Frontend Setup
 
