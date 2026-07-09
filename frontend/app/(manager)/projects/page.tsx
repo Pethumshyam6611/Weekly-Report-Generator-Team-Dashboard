@@ -16,6 +16,7 @@ import {
   deactivateProject,
   getProjectMembers,
   getProjects,
+  unassignUserFromProject,
   updateProject
 } from '@/lib/api/projects.api';
 import { getTeamMembers } from '@/lib/api/users.api';
@@ -103,6 +104,22 @@ export default function ProjectsPage() {
     }
   };
 
+  const unassignMember = async (userId: number) => {
+    if (!assigningProject) return;
+    setSaving(true);
+    try {
+      await unassignUserFromProject(assigningProject.id, userId);
+      toast.success('Member removed from project');
+      await load();
+      const members = await getProjectMembers(assigningProject.id);
+      setAssigningProject((current) => (current ? { ...current, members, memberCount: members.length } : current));
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Could not remove member'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const deactivate = async (project: ProjectWithMembers) => {
     setSaving(true);
     try {
@@ -171,6 +188,7 @@ export default function ProjectsPage() {
         saving={saving}
         onClose={() => setAssigningProject(null)}
         onAssign={assignMembers}
+        onUnassign={unassignMember}
       />
     </div>
   );

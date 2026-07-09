@@ -15,21 +15,23 @@ type AssignMemberModalProps = {
   saving?: boolean;
   onClose: () => void;
   onAssign: (userIds: number[]) => Promise<void>;
+  onUnassign: (userId: number) => Promise<void>;
 };
 
-export function AssignMemberModal({ open, project, members, saving, onClose, onAssign }: AssignMemberModalProps) {
+export function AssignMemberModal({ open, project, members, saving, onClose, onAssign, onUnassign }: AssignMemberModalProps) {
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const assignedMembers = project?.members || [];
+  const assignedIds = useMemo(() => new Set(assignedMembers.map((member) => member.id)), [assignedMembers]);
 
   const filteredMembers = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    if (!needle) return members;
-    return members.filter((member) => (
+    const availableMembers = members.filter((member) => !assignedIds.has(member.id));
+    if (!needle) return availableMembers;
+    return availableMembers.filter((member) => (
       member.name.toLowerCase().includes(needle) || member.email.toLowerCase().includes(needle)
     ));
-  }, [members, search]);
-
-  const assignedIds = new Set(project?.members?.map((member) => member.id) || []);
+  }, [assignedIds, members, search]);
 
   const toggle = (id: number) => {
     setSelectedIds((current) => (
@@ -53,15 +55,46 @@ export function AssignMemberModal({ open, project, members, saving, onClose, onA
       <div className="space-y-4">
         <Input label="Search members" value={search} onChange={(event) => setSearch(event.target.value)} />
 
+        <section className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-ink">Assigned members</h3>
+            <span className="text-xs text-ink-muted">{assignedMembers.length} assigned</span>
+          </div>
+          {assignedMembers.length === 0 ? (
+            <div className="rounded-panel border border-dashed border-line bg-surface-page px-4 py-3 text-sm text-ink-muted">
+              No members are assigned to this project yet.
+            </div>
+          ) : (
+            <div className="max-h-40 space-y-2 overflow-y-auto">
+              {assignedMembers.map((member) => (
+                <div key={member.id} className="flex items-center justify-between gap-3 rounded-panel border border-line bg-surface-page px-3 py-2 text-sm">
+                  <span>
+                    <span className="block font-medium text-ink">{member.name}</span>
+                    <span className="text-xs text-ink-muted">{member.email}</span>
+                  </span>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={saving}
+                    onClick={() => onUnassign(member.id)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
         {filteredMembers.length === 0 ? (
           <EmptyState
-            title="No team members found"
-            description="Team members appear here after they have reports or existing project assignments."
+            title="No available members found"
+            description="All matching team members are already assigned to this project."
           />
         ) : (
           <div className="max-h-72 space-y-2 overflow-y-auto">
             {filteredMembers.map((member) => {
-              const alreadyAssigned = assignedIds.has(member.id);
               return (
                 <label
                   key={member.id}
@@ -74,8 +107,7 @@ export function AssignMemberModal({ open, project, members, saving, onClose, onA
                   <input
                     type="checkbox"
                     className="h-4 w-4 accent-brand"
-                    checked={selectedIds.includes(member.id) || alreadyAssigned}
-                    disabled={alreadyAssigned}
+                    checked={selectedIds.includes(member.id)}
                     onChange={() => toggle(member.id)}
                   />
                 </label>
