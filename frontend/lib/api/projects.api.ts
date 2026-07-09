@@ -35,6 +35,11 @@ export const assignUserToProject = async (projectId: number, userId: number) => 
   return response.data.data.assignment;
 };
 
+export const unassignUserFromProject = async (projectId: number, userId: number) => {
+  const response = await axiosClient.delete<ApiSuccess<{ assignment: unknown }>>(`/projects/${projectId}/members/${userId}`);
+  return response.data.data.assignment;
+};
+
 export const getProjectMembers = async (projectId: number) => {
   const response = await axiosClient.get<ApiSuccess<{ members: User[] }>>(`/projects/${projectId}/members`);
   return response.data.data.members;
