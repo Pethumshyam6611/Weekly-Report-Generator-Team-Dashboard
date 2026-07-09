@@ -8,8 +8,13 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Enter a valid email address'),
+  role: z.enum(['team_member', 'manager']),
+  managerInviteCode: z.string().max(120, 'Invite code is too long').optional(),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string().min(8, 'Confirm your password')
+}).refine((data) => data.role !== 'manager' || Boolean(data.managerInviteCode?.trim()), {
+  message: 'Manager invite code is required',
+  path: ['managerInviteCode']
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword']

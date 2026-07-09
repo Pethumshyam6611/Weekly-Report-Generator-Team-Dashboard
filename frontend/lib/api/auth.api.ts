@@ -1,6 +1,6 @@
 import { axiosClient } from './axiosClient';
 import type { ApiSuccess } from '@/lib/types/api.types';
-import type { LoginResponse, RefreshResponse, User } from '@/lib/types/user.types';
+import type { LoginResponse, RefreshResponse, User, UserRole } from '@/lib/types/user.types';
 
 export type LoginPayload = {
   email: string;
@@ -11,6 +11,8 @@ export type RegisterPayload = {
   name: string;
   email: string;
   password: string;
+  role?: UserRole;
+  managerInviteCode?: string;
 };
 
 export const login = async (payload: LoginPayload) => {
